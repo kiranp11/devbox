@@ -66,25 +66,26 @@ Vagrant.configure("2") do |config|
   # #               Managed by Puppet.\n"
   # # }
   #
-  # config.vm.provision :puppet do |puppet|
-  #   puppet.manifests_path = "manifests"
-  #   puppet.manifest_file  = "init.pp"
-  # end
+  config.vm.provision :shell, :inline=> "sudo apt-get update"
+
+  config.vm.provision :puppet do |puppet|
+     puppet.manifests_path = "./puppet/manifests"
+     puppet.manifest_file  = "site.pp"
+     puppet.module_path   = "./puppet/modules"
+     puppet.options        = "-dv"
+  end
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
   #
-  config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = "../my-recipes/cookbooks"
-    chef.roles_path = "../my-recipes/roles"
-    chef.data_bags_path = "../my-recipes/data_bags"
-    chef.add_recipe "mysql"
-    chef.add_recipe 'java'
-    chef.add_recipe 'hadoop'
-    # You may also specify custom JSON attributes:
-    chef.json = { :mysql_password => "!4321abcd" }
-  end
+  # config.vm.provision :chef_solo do |chef|
+  #   chef.cookbooks_path = "cookbooks"
+  #   chef.add_recipe 'java'
+  #   chef.add_recipe 'hadoop'
+  #   # You may also specify custom JSON attributes:
+  #   chef.json = { :mysql_password => "!4321abcd" }
+  # end
 
   # Enable provisioning with chef server, specifying the chef server URL,
   # and the path to the validation key (relative to this Vagrantfile).
