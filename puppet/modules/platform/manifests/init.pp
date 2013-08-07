@@ -37,6 +37,62 @@ class platform {
         require   => Exec["untar-hadoop"]
     }
 
+    file { "/usr/local/hadoop":
+        ensure => "/usr/local/hadoop-1.0.3",
+        require => Exec["untar-hadoop"]
+    }
+
+    group { "hadoop":
+        ensure => present,
+        gid => 9999,
+        require => Exec["untar-hadoop"]
+    }
+
+    exec {"mkdir -p /home/hadoop/.ssh":
+       unless =>["test -d /home/hadoop/.ssh"] 
+    }
+
+
+    user { "hadoop":
+        ensure     => present,
+        gid        => "9999",
+        groups     => ["adm", "hadoop", "root"],
+        membership => minimum,
+        require    => [ Group["hadoop"],Exec["mkdir /home/hadoop"]],
+        home       => "/home/hadoop/"
+    }
+
+    # change the permissions of the Hadoop installation.
+    exec { "chown-hadoop":
+        command => "chown -R hadoop:hadoop /usr/local/hadoop* /var/log/hadoop",
+        require => [ Group["hadoop"], User["hadoop"], File["/usr/local/hadoop"] ],
+        subscribe => Exec["untar-hadoop"],
+        refreshonly => true
+    }
+
+    file { "/home/hadoop/.ssh/id_dsa":
+        source  => "puppet:///modules/platform/hadoop_dsa",
+        mode    => 600,
+        owner   => "hadoop",
+        group   => "hadoop",
+        require => User["hadoop"];
+    }
+
+    file { "/home/hadoop/.ssh/id_dsa.pub":
+        source => "puppet:///modules/platform/hadoop_dsa.pub",
+         mode    => 600,
+        owner   => "hadoop",
+        group   => "hadoop",
+        require => User["hadoop"];
+    }
+
+    file { "/home/hadoop/.ssh/authorized_keys":
+        source => "puppet:///modules/platform/hadoop_dsa.pub",
+         mode    => 600,
+        owner   => "hadoop",
+        group   => "hadoop",
+        require => User["hadoop"];
+    }
 
 
 }
