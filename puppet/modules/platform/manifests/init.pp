@@ -9,7 +9,7 @@ class platform {
     }
 
     exec { "create-folders" :
-        command   => "mkdir /var/log/hadoop",
+        command   => "mkdir -p /var/log/hadoop",
         logoutput => true
     }
 
@@ -76,9 +76,15 @@ class platform {
         require => File["/home/vagrant/.ssh/id_dsa.pub"];
     }
 
+    exec { "add-to-known_hosts":
+        command => "ssh-keygen localhost >> /home/vagrant/.ssh/known_hosts",
+        unless  => "grep -iq localhost /home/vagrant/.ssh/known_hosts",
+        require => File["/home/vagrant/.ssh/id_dsa.pub"];
+    }
+
     exec { "format-namenode":
         command => "/usr/local/hadoop/bin/hadoop namenode -format",
-        require => Exec["update-auth-keys"],
+        require =>  [ Exec["update-auth-keys"], Exec["chown-vagrant"]],
         unless  => "test -d /tmp/hadoop-vagrant/dfs/name",
         user    => "vagrant"
     }
@@ -86,7 +92,7 @@ class platform {
      exec { "start-hadoop-demons":
         cwd       => "/usr/local/hadoop/bin/",
         command   => "nohup /usr/local/hadoop/bin/start-all.sh > /dev/null",
-        require => Exec["format-namenode"],
+        require =>  [Exec["format-namenode"], Exec["add-to-known_hosts"]],
         user    => "vagrant"
     }
 }
