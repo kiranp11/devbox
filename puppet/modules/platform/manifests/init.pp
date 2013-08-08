@@ -77,7 +77,7 @@ class platform {
     }
 
     exec { "add-to-known_hosts":
-        command => "ssh-keygen localhost >> /home/vagrant/.ssh/known_hosts",
+        command => "ssh-keyscan localhost >> /home/vagrant/.ssh/known_hosts",
         unless  => "grep -iq localhost /home/vagrant/.ssh/known_hosts",
         require => File["/home/vagrant/.ssh/id_dsa.pub"];
     }
