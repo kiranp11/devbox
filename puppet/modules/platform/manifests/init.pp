@@ -20,11 +20,25 @@ class platform {
         timeout   => 0
     }
 
+    exec { "get-hive-tar" :
+        command   => "wget http://apache.mirrors.pair.com/hive/hive-0.11.0/hive-0.11.0-bin.tar.gz -O /tmp/hive-0.11.0-bin.tar.gz",
+        logoutput => true,
+        unless    => "test -f /tmp/hive-0.11.0-bin.tar.gz",
+        timeout   => 0
+    }
+
     exec { "untar-hadoop" :
         command   => "tar -xvf /tmp/hadoop-1.0.3-bin.tar.gz",
         logoutput => true,
         cwd       => "/usr/local",
         require   => Exec["get-hadoop-tar"]
+    }
+
+    exec { "untar-hive" :
+        command   => "tar -xvf /tmp/hive-0.11.0-bin.tar.gz",
+        logoutput => true,
+        cwd       => "/usr/local",
+        require   => Exec["get-hive-tar"]
     }
 
     file {"/usr/local/hadoop-1.0.3/conf/core-site.xml":
@@ -47,14 +61,19 @@ class platform {
         require => Exec["untar-hadoop"]
     }
 
+    file { "/usr/local/hive":
+        ensure => "/usr/local/hive-0.11.0-bin",
+        require => Exec["untar-hive"]
+    }
+
     file {"/usr/local/hadoop/conf/hadoop-env.sh":
         source => "puppet:///modules/platform/hadoop-env.sh",
         require => Exec["untar-hadoop"]
     }
 
     exec { "chown-vagrant":
-        command => "chown -R vagrant:vagrant /usr/local/hadoop* /var/log/hadoop",
-        require => [ File["/usr/local/hadoop"] , Exec["create-folders"]]
+        command => "chown -R vagrant:vagrant /usr/local/hadoop* /var/log/hadoop /usr/local/hive*",
+        require => [ File["/usr/local/hadoop"] , Exec["create-folders"], File["/usr/local/hive"]]
     }
 
     file { "/home/vagrant/.ssh/id_dsa":

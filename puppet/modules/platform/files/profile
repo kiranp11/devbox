@@ -37,3 +37,11 @@ else
     export PATH=$PATH:$HADOOP_HOME/bin
     echo "hadoop added to path"
 fi
+
+export HIVE_HOME='/usr/local/hive'
+if [[ $PATH =~ $HIVE_HOME ]]; then
+    echo "Hive in path"
+else
+    export PATH=$PATH:$HIVE_HOME/bin
+    echo "Hive added to path"
+fi
