@@ -45,3 +45,11 @@ else
     export PATH=$PATH:$HIVE_HOME/bin
     echo "Hive added to path"
 fi
+
+export FLUME_HOME='/usr/local/flume'
+if [[ $PATH =~ $FLUME_HOME ]]; then
+    echo "Flume in path"
+else
+    export PATH=$PATH:$FLUME_HOME/bin
+    echo "Flume added to path"
+fi

@@ -27,6 +27,14 @@ class platform {
         timeout   => 0
     }
 
+    exec { "get-flume-tar" :
+        command   => "wget http://apache.tradebit.com/pub/flume/1.4.0/apache-flume-1.4.0-bin.tar.gz -O /tmp/apache-flume-1.4.0-bin.tar.gz",
+        logoutput => true,
+        unless    => "test -f /tmp/apache-flume-1.4.0-bin.tar.gz",
+        timeout   => 0
+    }
+
+
     exec { "untar-hadoop" :
         command   => "tar -xvf /tmp/hadoop-1.0.3-bin.tar.gz",
         logoutput => true,
@@ -40,6 +48,14 @@ class platform {
         cwd       => "/usr/local",
         require   => Exec["get-hive-tar"]
     }
+
+    exec { "untar-flume" :
+        command   => "tar -xvf /tmp/apache-flume-1.4.0-bin.tar.gz",
+        logoutput => true,
+        cwd       => "/usr/local",
+        require   => Exec["get-flume-tar"]
+    }
+
 
     file {"/usr/local/hadoop-1.0.3/conf/core-site.xml":
         source => "puppet:///modules/platform/core-site.xml",
@@ -66,14 +82,20 @@ class platform {
         require => Exec["untar-hive"]
     }
 
+    file { "/usr/local/flume":
+        ensure => "/usr/local/apache-flume-1.4.0-bin",
+        require => Exec["untar-flume"]
+    }
+
+
     file {"/usr/local/hadoop/conf/hadoop-env.sh":
         source => "puppet:///modules/platform/hadoop-env.sh",
         require => Exec["untar-hadoop"]
     }
 
     exec { "chown-vagrant":
-        command => "chown -R vagrant:vagrant /usr/local/hadoop* /var/log/hadoop /usr/local/hive*",
-        require => [ File["/usr/local/hadoop"] , Exec["create-folders"], File["/usr/local/hive"]]
+        command => "chown -R vagrant:vagrant /usr/local/hadoop* /var/log/hadoop /usr/local/hive* /usr/local/flume*",
+        require => [ File["/usr/local/hadoop"] , Exec["create-folders"], File["/usr/local/hive"], File["/usr/local/flume"]]
     }
 
     file { "/home/vagrant/.ssh/id_dsa":
