@@ -30,3 +30,10 @@ if [ -d /etc/profile.d ]; then
 fi
 
 export JAVA_HOME='/usr/lib/jvm/java-1.6.0-openjdk-amd64'
+export HADOOP_HOME='/usr/local/hadoop'
+if [[ $PATH =~ $HADOOP_HOME ]]; then
+    echo "hadoop in path"
+else
+    export PATH=$PATH:$HADOOP_HOME/bin
+    echo "hadoop added to path"
+fi
